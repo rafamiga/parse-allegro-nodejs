@@ -9,6 +9,8 @@ if (debug) console.log("!!! DEBUG ON");
 var fs = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
+
+// process.exit(255);
         
 // testowe 
 url = 'http://allegro.pl/show_item.php?item=6070607339';
@@ -70,7 +72,7 @@ request(url, function(error, response, html) {
         aSeller = $("#seller-details").find(".alleLink").find('span').first().text();
 //        console.log("aSeller="+aSeller);
         aSellerLoc = $("#showitem-main").find(".list-unstyled").find('li').find('strong').first().text();
-        console.log("aSellerLoc="+aSellerLoc);
+//        console.log("aSellerLoc="+aSellerLoc);
         
     } else {
 
