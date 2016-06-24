@@ -9,45 +9,62 @@ http://orfika.net
 */
 
 var debug = typeof v8debug === 'object';
-debug = process.argv.indexOf('debug') > -1;
+if (!debug) {
+	debug = process.argv.indexOf('debug') > -1;
+}
 
-if (debug) console.log("!!! DEBUG ON");
+if (debug) console.log("iii DEBUG ON");
 
 var fs = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
 
-// process.exit(255);
-        
-// testowe 
-url = 'http://allegro.pl/show_item.php?item=6070607339';
-url = 'http://allegro.pl/show_item.php?item=6271346272'; // lg
-url = 'http://allegro.pl/show_item.php?item=6264028987'; // amiga
-url = 'http://allegro.pl/ShowItem2.php?item=6256134914'; // spectrum stary layout
-//url = 'http://allegro.pl/ShowItem2.php?item=6258268704'; // c16 stary layout
-url = 'http://allegro.pl/ShowItem2.php?item=6263296897'; // blad w starym
+if (debug) { console.log(process.argv); console.log(process.argv.length) }
 
-console.log(process.argv) && debug;
+if (process.argv.length > 2) {
+    a = process.argv[2];
+	if (isNaN(parseInt(a))) {
+		console.log("!!! Podano błędny numer aukcji: " + a.toString());
+		process.exit(2);
+	}
 
-if (process.argv.length == 3 && ! debug) {
-    a = process.argv.slice(2);
     url = 'http://allegro.pl/show_item.php?item=' + a.toString();
-} else { console.log("??? Jaki nr aukcji?"); process.exit(1); }
+} else {
+	console.log("??? Podaj numer aukcji."); process.exit(1);
+}
+
+if (debug) {
+	console.log("iii aukcja testowa");
+	// aukcje testowe 
+	// url = 'http://allegro.pl/show_item.php?item=6070607339';
+	// url = 'http://allegro.pl/show_item.php?item=6271346272'; // lg
+	// url = 'http://allegro.pl/show_item.php?item=6264028987'; // amiga
+	// url = 'http://allegro.pl/ShowItem2.php?item=6256134914'; // spectrum stary layout
+	// url = 'http://allegro.pl/ShowItem2.php?item=6258268704'; // c16 stary layout
+	// url = 'http://allegro.pl/ShowItem2.php?item=6263296897'; // blad w starym; naprawiony
+	url = 'http://allegro.pl/ShowItem2.php?item=6274748221'; // cena z kosmosu, źle parsowana
+}
 
 console.log('... req ' + url);
 
 request(url, function(error, response, html) {
-    if (error) return console.error("Niepowodzenie odczytu '" + url +"': ", err);
+    if (error) return console.error("!!! Niepowodzenie odczytu '" + url +"': ", err);
     
+	// if (debug) console.log(html)
     var $ = cheerio.load(html);
-
-    // Finally, we'll define the variables we're going to capture
-
+	
     var aTitle, aNum, aPrice, aEnd, aBidders, aWinner, aSeller, aSellerLoc;
     console.log('... parsowanie');
 
     aTitle = $("meta[itemprop = 'name']").attr('content');
     aNum = $("meta[itemprop = 'sku']").attr('content');
+
+	if (debug) { console.log("aNum=" + aNum + " (" + typeof(aNum) + ") a=" + a + " ("+ typeof(a) + ")"); }
+	
+	if (!debug && a != aNum) {
+		console.log ("!!! Aukcja niedostępna, tj. za stara albo podano nieprawidłowy numer");
+		process.exit(3);
+	}
 
     if (debug) console.log("meta itemprop name="+$("meta[itemprop = 'name']").attr('content'));
 	if (debug) console.log("sku="+$("meta[itemprop = 'sku']").attr('content'));
@@ -63,8 +80,8 @@ request(url, function(error, response, html) {
             
         aNum = visitDataParsed.id;
         aTitle = visitDataParsed.name;
-        aPrice = visitDataParsed.bidPrice;
-//        console.log("parsed="+aNum+" "+aTitle+" "+aPrice);
+        aPrice = visitDataParsed.bidPrice.replace(/\s/g,"");
+        if (debug) console.log("parsed a="+aNum+" "+aTitle+" bidPrice="+aPrice);
 
         aEnd = $("#time-info").find('time').attr('datetime');
 
@@ -79,25 +96,24 @@ request(url, function(error, response, html) {
 //        console.log("aSellerLoc="+aSellerLoc);
         
     } else {
-
-        // stary layout. na ramkach
+        // stary layout, ten na ramkach
         console.log("iii STARY layout");
             
-        aPrice = $("#itemFinishBox2").find(".left").find('strong').first().text();
+        aPrice = $("#itemFinishBox2").find(".left").find('strong').first().text().replace(/\s/g,"");
 
         aEnd = $(".timeInfo").text(); // "<strong>Zakończona</strong> (18 czerwca, 17:15:15)"
         aEnd = aEnd.substring(aEnd.indexOf("(")+1,aEnd.indexOf(")")-1); // data w nawiasach
         aEnd = aEnd.substring(0,aEnd.indexOf(",")); // usuwanie przecinka
-        console.log("aEnd="+aEnd) && debug;
+        if (debug) console.log("aEnd="+aEnd);
 
         var aDay = parseInt(aEnd.substring(0,aEnd.indexOf(" ")));
         
         var dMons = ["stycznia","lutego","marca","kwietnia","maja","czerwca",
             "lipca","sierpnia","września","października","listopada","grudnia"];
         var dParsuj = aEnd.split(" ");
-        console.log("dparsuj[1]="+dParsuj[1]) && debug;
+        if (debug) console.log("dparsuj[1]="+dParsuj[1]);
         var dMon = dMons.indexOf(dParsuj[1].toLowerCase())+1;
-        console.log("dparsuj="+dParsuj[0]+"/"+dMon) && debug;
+        if (debug) console.log("dparsuj="+dParsuj[0]+"/"+dMon);
 
         dD = new Date();
         dY = dD.getFullYear();
@@ -120,10 +136,8 @@ request(url, function(error, response, html) {
         
     }
 
-
     aPrice = parseFloat(aPrice.replace(/[^0-9],\./g, '').replace(',','.')).toFixed(2).toString().replace('.',',');
-    console.log('aPrice='+aPrice) && debug;
-
+    
     aEnd = Date.parse(aEnd);
     aDate = new Date(aEnd);
     aEnd = aDate.toLocaleDateString();
