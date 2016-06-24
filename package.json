@@ -1,0 +1,12 @@
+{
+  "name"         : "node-parse-allegro",
+  "version"      : "0.0.1",
+  "description"  : "Parse Allegro.pl auction - based on tutorial at https://scotch.io/tutorials/scraping-the-web-with-node-js",
+  "main"         : "server.js",
+  "author"       : "Rafamiga",
+  "dependencies" : {
+    "express"    : "latest",
+    "request"    : "latest",
+    "cheerio"    : "latest"
+  }
+}
