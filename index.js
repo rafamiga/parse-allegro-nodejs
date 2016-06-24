@@ -1,8 +1,15 @@
-// var express = require('express');
-// var app     = express();
+/*
+Skrypt parsuje aukcje Allegro i wypluwa dane w formie skondensowanej.
+Używany do zbierania informacji o cenach komputerowego sprzętu retro.
+
+(c) 2016 Rafał Frühling <rafamiga@gmail.com>
+
+http://orfika.net 
+
+*/
 
 var debug = typeof v8debug === 'object';
-debug = process.execArgv.indexOf('--debug') > -1;
+debug = process.argv.indexOf('debug') > -1;
 
 if (debug) console.log("!!! DEBUG ON");
 
@@ -20,7 +27,7 @@ url = 'http://allegro.pl/ShowItem2.php?item=6256134914'; // spectrum stary layou
 //url = 'http://allegro.pl/ShowItem2.php?item=6258268704'; // c16 stary layout
 url = 'http://allegro.pl/ShowItem2.php?item=6263296897'; // blad w starym
 
-// console.log(process.argv);
+console.log(process.argv) && debug;
 
 if (process.argv.length == 3 && ! debug) {
     a = process.argv.slice(2);
@@ -30,7 +37,7 @@ if (process.argv.length == 3 && ! debug) {
 console.log('... req ' + url);
 
 request(url, function(error, response, html) {
-    if (error) return console.error('Request failed:', err);
+    if (error) return console.error("Niepowodzenie odczytu '" + url +"': ", err);
     
     var $ = cheerio.load(html);
 
@@ -42,17 +49,14 @@ request(url, function(error, response, html) {
     aTitle = $("meta[itemprop = 'name']").attr('content');
     aNum = $("meta[itemprop = 'sku']").attr('content');
 
-//    console.log("meta itemprop name="+$("meta[itemprop = 'name']").attr('content'));
-//    console.log("sku="+$("meta[itemprop = 'sku']").attr('content'));
-//    console.log("meta itemprop name="+$("#wrapper").children("meta[itemprop = 'name']").attr('content'));
-//    console.log("buyerInfo="+$("#siWrapper").find('.buyerInfo').find('strong').text());
-//    console.log("timeInfo="+$(".timeInfo").text());
+    if (debug) console.log("meta itemprop name="+$("meta[itemprop = 'name']").attr('content'));
+	if (debug) console.log("sku="+$("meta[itemprop = 'sku']").attr('content'));
 
     var visitData = $("div.showitem-main").attr('data-visit');
 
     if (typeof visitData !== typeof undefined) {
         // nowy layout
-        console.log("!!! NOWY layout");
+        console.log("iii NOWY layout");
 
 //        console.log("data-visit="+visitData);
         var visitDataParsed = JSON.parse(visitData);
@@ -77,23 +81,23 @@ request(url, function(error, response, html) {
     } else {
 
         // stary layout. na ramkach
-        console.log("!!! STARY layout");
+        console.log("iii STARY layout");
             
         aPrice = $("#itemFinishBox2").find(".left").find('strong').first().text();
 
         aEnd = $(".timeInfo").text(); // "<strong>Zakończona</strong> (18 czerwca, 17:15:15)"
         aEnd = aEnd.substring(aEnd.indexOf("(")+1,aEnd.indexOf(")")-1); // data w nawiasach
         aEnd = aEnd.substring(0,aEnd.indexOf(",")); // usuwanie przecinka
-//        console.log("aEnd="+aEnd);
+        console.log("aEnd="+aEnd) && debug;
 
         var aDay = parseInt(aEnd.substring(0,aEnd.indexOf(" ")));
         
         var dMons = ["stycznia","lutego","marca","kwietnia","maja","czerwca",
             "lipca","sierpnia","września","października","listopada","grudnia"];
         var dParsuj = aEnd.split(" ");
-//        console.log("dparsuj[1]="+dParsuj[1]);
+        console.log("dparsuj[1]="+dParsuj[1]) && debug;
         var dMon = dMons.indexOf(dParsuj[1].toLowerCase())+1;
-//        console.log("dparsuj="+dParsuj[0]+"/"+dMon);
+        console.log("dparsuj="+dParsuj[0]+"/"+dMon) && debug;
 
         dD = new Date();
         dY = dD.getFullYear();
@@ -118,7 +122,7 @@ request(url, function(error, response, html) {
 
 
     aPrice = parseFloat(aPrice.replace(/[^0-9],\./g, '').replace(',','.')).toFixed(2).toString().replace('.',',');
-//    console.log('aPrice='+aPrice);
+    console.log('aPrice='+aPrice) && debug;
 
     aEnd = Date.parse(aEnd);
     aDate = new Date(aEnd);
@@ -127,4 +131,3 @@ request(url, function(error, response, html) {
     console.log(aTitle + " (" + aNum + ") " + aPrice + " " + aEnd + " " +
         aBidders + " " + aWinner + "; " + aSeller + ", " + aSellerLoc);
 })
-
