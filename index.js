@@ -48,7 +48,7 @@ if (debug) {
 console.log('... req ' + url);
 
 request(url, function(error, response, html) {
-    if (error) return console.error("!!! Niepowodzenie odczytu '" + url +"': ", err);
+    if (error) return console.error("!!! Niepowodzenie odczytu '" + url +"': ", erro);
     
 	// if (debug) console.log(html)
     var $ = cheerio.load(html);
