@@ -18,7 +18,6 @@ if (debug) console.log("iii DEBUG ON");
 var fs = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
-var util = require('util');
 
 if (debug) { console.log(process.argv); console.log(process.argv.length) }
 
