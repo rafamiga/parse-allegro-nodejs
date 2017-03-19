@@ -18,6 +18,7 @@ if (debug) console.log("iii DEBUG ON");
 var fs = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
+var util = require('util');
 
 if (debug) { console.log(process.argv); console.log(process.argv.length) }
 
@@ -42,7 +43,7 @@ if (debug) {
 	// url = 'http://allegro.pl/ShowItem2.php?item=6256134914'; // spectrum stary layout
 	// url = 'http://allegro.pl/ShowItem2.php?item=6258268704'; // c16 stary layout
 	// url = 'http://allegro.pl/ShowItem2.php?item=6263296897'; // blad w starym; naprawiony
-	url = 'http://allegro.pl/ShowItem2.php?item=6274748221'; // cena z kosmosu, źle parsowana
+	// url = 'http://allegro.pl/ShowItem2.php?item=6274748221'; // cena z kosmosu, źle parsowana
 }
 
 console.log('... req ' + url);
@@ -104,7 +105,6 @@ request(url, function(error, response, html) {
         aEnd = $(".timeInfo").text(); // "<strong>Zakończona</strong> (18 czerwca, 17:15:15)"
         aEnd = aEnd.substring(aEnd.indexOf("(")+1,aEnd.indexOf(")")-1); // data w nawiasach
         aEnd = aEnd.substring(0,aEnd.indexOf(",")); // usuwanie przecinka
-        if (debug) console.log("aEnd="+aEnd);
 
         var aDay = parseInt(aEnd.substring(0,aEnd.indexOf(" ")));
         
@@ -138,10 +138,20 @@ request(url, function(error, response, html) {
 
     aPrice = parseFloat(aPrice.replace(/[^0-9],\./g, '').replace(',','.')).toFixed(2).toString().replace('.',',');
     
+    if (debug) console.log("aEnd="+aEnd);
     aEnd = Date.parse(aEnd);
     aDate = new Date(aEnd);
-    aEnd = aDate.toLocaleDateString();
+    if (debug) console.log("aDate="+aDate.toString());
+    aEnd = aDate.getFullYear()+"-";
 
+    // proste formatowanie daty (format ISO) bez importowania modułów 
+    var m = aDate.getMonth();
+    var d = aDate.getDate();
+    if (m < 10) aEnd += "0"
+    aEnd += m.toString()+"-";
+    if (d < 10) aEnd += "0"
+    aEnd += d.toString();
+    
     console.log(aTitle + " (" + aNum + ") " + aPrice + " " + aEnd + " " +
         aBidders + " " + aWinner + "; " + aSeller + ", " + aSellerLoc);
 })
