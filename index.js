@@ -137,7 +137,6 @@ request(url, function(error, response, html) {
     }
 
     aPrice = parseFloat(aPrice.replace(/[^0-9],\./g, '').replace(',','.')).toFixed(2).toString().replace('.',',');
-    aEnd="2017-01-01T00:25:50.000+01:00";
     
     if (debug) console.log("aEnd="+aEnd);
     aEnd = Date.parse(aEnd);
