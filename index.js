@@ -84,6 +84,7 @@ request(url, function(error, response, html) {
         if (debug) console.log("parsed a="+aNum+" "+aTitle+" bidPrice="+aPrice);
 
         aEnd = $("#time-info").find('time').attr('datetime');
+//        console.log("aEnd="+aEnd);
 
         aWinner = $("#history").find('.body').find('div').first().text();
 //        console.log("aWinner="+aWinner);
@@ -136,15 +137,19 @@ request(url, function(error, response, html) {
     }
 
     aPrice = parseFloat(aPrice.replace(/[^0-9],\./g, '').replace(',','.')).toFixed(2).toString().replace('.',',');
+    aEnd="2017-01-01T00:25:50.000+01:00";
     
     if (debug) console.log("aEnd="+aEnd);
     aEnd = Date.parse(aEnd);
+//    console.log("aEnd parsed="+aEnd);
     aDate = new Date(aEnd);
+//    console.log("aDate="+aDate);
     if (debug) console.log("aDate="+aDate.toString());
     aEnd = aDate.getFullYear()+"-";
 
     // proste formatowanie daty (format ISO) bez importowania modułów 
-    var m = aDate.getMonth();
+//    console.log("aDate="+aDate+" mon="+aDate.getMonth());
+    var m = aDate.getMonth() + 1; // od zera?!
     var d = aDate.getDate();
     if (m < 10) aEnd += "0"
     aEnd += m.toString()+"-";
